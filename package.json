@@ -1,0 +1,10 @@
+{
+  "name": "maint-aws",
+  "description": "",
+  "version": "0.1.0",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-prune-plugin": "^1.4.1",
+    "serverless-python-requirements": "^5.0.0"
+  }
+}

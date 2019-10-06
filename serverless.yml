@@ -1,0 +1,61 @@
+service: maint-ec2
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: "ap-northeast-1"
+  stage: dev
+  logRetentionInDays: 30
+  deploymentBucket:
+    name: serverless-deployment-173212653244
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:PutLogEvents"
+      Resource:
+        - "arn:aws:logs:*:*:*"
+    - Effect: "Allow"
+      Action:
+        - "ec2:Describe*"
+        - "ec2:StopInstances"
+        - "ec2:StartInstances"  
+      Resource:
+       - "*"
+plugins:
+  - serverless-prune-plugin
+  - serverless-python-requirements
+functions:
+  ec2-stop-start:
+    handler: handler.lambda_handler
+    timeout: 300
+    environment:
+      REGION: "ap-northeast-1"
+      AUTO_STOP: "True"
+      AUTO_START: "True"
+      STOP_HOLIDAY: "True"
+      NO_STOP_TAG: "NoStop"
+      NO_START_TAG: "NoStart"
+      TZ: Asia/Tokyo
+    events:
+      - schedule:
+          rate: cron(00 15 ? * MON-FRI *)
+          name: maint-ec2-stop
+          enabled: false
+          input:
+            action: STOP
+      - schedule:
+          rate: cron(00 00 ? * MON-FRI *)
+          name: maint-ec2-start
+          enabled: false
+          input:
+            action: START
+custom:
+  prune:
+    automatic: true
+    number: 5
+  pythonRequirements:
+    pythonBin: /Users/kikuchi/.pyenv/shims/python3.7
+    useDownloadCache: true
+    useStaticCache: true
